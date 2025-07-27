@@ -1,0 +1,73 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
+\PYG{k+kn}{import} \PYG{n+nn}{pandas} \PYG{k}{as} \PYG{n+nn}{pd}
+\PYG{k+kn}{import} \PYG{n+nn}{matplotlib.pyplot} \PYG{k}{as} \PYG{n+nn}{plt}
+\PYG{k+kn}{from} \PYG{n+nn}{sklearn.metrics} \PYG{k+kn}{import} \PYG{n}{mean\PYGZus{}squared\PYGZus{}error}
+
+
+\PYG{k}{def} \PYG{n+nf}{grey\PYGZus{}model}\PYG{p}{(}\PYG{n}{data}\PYG{p}{):}
+    \PYG{n}{AGO} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{cumsum}\PYG{p}{(}\PYG{n}{data}\PYG{p}{)}
+
+    \PYG{n}{Z} \PYG{o}{=} \PYG{p}{(}\PYG{n}{AGO}\PYG{p}{[:}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{+} \PYG{n}{AGO}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:])} \PYG{o}{/} \PYG{l+m+mf}{2.0}
+
+    \PYG{c+c1}{\PYGZsh{} 构造矩阵B和Y}
+    \PYG{n}{B} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{vstack}\PYG{p}{((}\PYG{o}{\PYGZhy{}}\PYG{n}{Z}\PYG{p}{,} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ones}\PYG{p}{(}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{Z}\PYG{p}{))))}\PYG{o}{.}\PYG{n}{T}
+    \PYG{n}{Y} \PYG{o}{=} \PYG{n}{data}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:]}\PYG{o}{.}\PYG{n}{reshape}\PYG{p}{(}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{Z}\PYG{p}{),} \PYG{l+m+mi}{1}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} 计算参数a和b}
+    \PYG{n}{a}\PYG{p}{,} \PYG{n}{b} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{dot}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{pinv}\PYG{p}{(}\PYG{n}{B}\PYG{p}{),} \PYG{n}{Y}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} 预测函数}
+    \PYG{k}{def} \PYG{n+nf}{predict}\PYG{p}{(}\PYG{n}{k}\PYG{p}{):}
+        \PYG{k}{return} \PYG{p}{(}\PYG{n}{data}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{b} \PYG{o}{/} \PYG{n}{a}\PYG{p}{)} \PYG{o}{*} \PYG{n}{np}\PYG{o}{.}\PYG{n}{exp}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{n}{a} \PYG{o}{*} \PYG{n}{k}\PYG{p}{)} \PYG{o}{+} \PYG{n}{b} \PYG{o}{/} \PYG{n}{a}
+
+    \PYG{c+c1}{\PYGZsh{} 计算模拟值}
+    \PYG{n}{sim\PYGZus{}values} \PYG{o}{=} \PYG{p}{[]}
+    \PYG{n}{sim\PYGZus{}values}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{data}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{])}
+    \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{data}\PYG{p}{)):}
+        \PYG{n}{sim\PYGZus{}values}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{i}\PYG{p}{))}
+
+    \PYG{c+c1}{\PYGZsh{} 模型检验}
+    \PYG{n}{errors} \PYG{o}{=} \PYG{n}{data} \PYG{o}{\PYGZhy{}} \PYG{n}{sim\PYGZus{}values}
+    \PYG{n}{S1} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{std}\PYG{p}{(}\PYG{n}{data}\PYG{p}{,} \PYG{n}{ddof}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+    \PYG{n}{S2} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{std}\PYG{p}{(}\PYG{n}{errors}\PYG{p}{,} \PYG{n}{ddof}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+    \PYG{n}{C} \PYG{o}{=} \PYG{n}{S2} \PYG{o}{/} \PYG{n}{S1}
+    \PYG{n}{P} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{abs}\PYG{p}{(}\PYG{n}{errors} \PYG{o}{\PYGZhy{}} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{errors}\PYG{p}{))} \PYG{o}{\PYGZlt{}} \PYG{l+m+mf}{0.6745} \PYG{o}{*} \PYG{n}{S1}\PYG{p}{)} \PYG{o}{/} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{data}\PYG{p}{)}
+
+    \PYG{k}{return} \PYG{n}{predict}\PYG{p}{,} \PYG{n}{sim\PYGZus{}values}\PYG{p}{,} \PYG{p}{(}\PYG{n}{a}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{],} \PYG{n}{b}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]),} \PYG{p}{(}\PYG{n}{C}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{],} \PYG{n}{P}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{])}
+
+
+\PYG{c+c1}{\PYGZsh{} 1. 读取历史数据}
+\PYG{n}{history\PYGZus{}df} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{read\PYGZus{}excel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}生均教育经费.xlsx\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{years} \PYG{o}{=} \PYG{n}{history\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}年份\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{values}
+\PYG{n}{population} \PYG{o}{=} \PYG{n}{history\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}人口总数（万人）\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{values}
+\PYG{n}{expenditure} \PYG{o}{=} \PYG{n}{history\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}生均教育经费(元)\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{values}
+
+\PYG{c+c1}{\PYGZsh{} 2. 灰度模型预测}
+\PYG{n}{predict\PYGZus{}func}\PYG{p}{,} \PYG{n}{sim\PYGZus{}values}\PYG{p}{,} \PYG{p}{(}\PYG{n}{a}\PYG{p}{,} \PYG{n}{b}\PYG{p}{),} \PYG{p}{(}\PYG{n}{C}\PYG{p}{,} \PYG{n}{P}\PYG{p}{)} \PYG{o}{=} \PYG{n}{grey\PYGZus{}model}\PYG{p}{(}\PYG{n}{expenditure}\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}灰色模型参数: a=}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{a}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{, b=}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{b}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}模型检验: 后验差比值C=}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{C}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{, 小误差概率P=}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{P}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 3. 读取未来人口数据}
+\PYG{n}{future\PYGZus{}df} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{read\PYGZus{}excel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}第一问预测结果.xlsx\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{future\PYGZus{}years} \PYG{o}{=} \PYG{n}{future\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}年份\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{values}
+\PYG{n}{future\PYGZus{}population} \PYG{o}{=} \PYG{n}{future\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}人口总数（万人）\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{values}
+
+\PYG{c+c1}{\PYGZsh{} 4. 预测未来生均经费}
+\PYG{n}{future\PYGZus{}k} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{arange}\PYG{p}{(}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{expenditure}\PYG{p}{),} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{expenditure}\PYG{p}{)} \PYG{o}{+} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{future\PYGZus{}years}\PYG{p}{))}
+\PYG{n}{future\PYGZus{}expenditure} \PYG{o}{=} \PYG{p}{[}\PYG{n}{predict\PYGZus{}func}\PYG{p}{(}\PYG{n}{k}\PYG{p}{)} \PYG{k}{for} \PYG{n}{k} \PYG{o+ow}{in} \PYG{n}{future\PYGZus{}k}\PYG{p}{]}
+
+\PYG{c+c1}{\PYGZsh{} 5. 计算增长率}
+\PYG{n}{growth\PYGZus{}rates} \PYG{o}{=} \PYG{p}{[(}\PYG{n}{future\PYGZus{}expenditure}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{future\PYGZus{}expenditure}\PYG{p}{[}\PYG{n}{i} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{])} \PYG{o}{/} \PYG{n}{future\PYGZus{}expenditure}\PYG{p}{[}\PYG{n}{i} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{*} \PYG{l+m+mi}{100}
+                \PYG{k}{for} \PYG{n}{i} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{future\PYGZus{}expenditure}\PYG{p}{))]}
+\PYG{n}{growth\PYGZus{}rates}\PYG{o}{.}\PYG{n}{insert}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{np}\PYG{o}{.}\PYG{n}{nan}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 6. 创建结果DataFrame}
+\PYG{n}{result\PYGZus{}df} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{DataFrame}\PYG{p}{(\PYGZob{}}
+    \PYG{l+s+s1}{\PYGZsq{}年份\PYGZsq{}}\PYG{p}{:} \PYG{n}{future\PYGZus{}years}\PYG{p}{,}
+    \PYG{l+s+s1}{\PYGZsq{}预测人口(万人)\PYGZsq{}}\PYG{p}{:} \PYG{n}{future\PYGZus{}population}\PYG{p}{,}
+    \PYG{l+s+s1}{\PYGZsq{}预测生均经费(元)\PYGZsq{}}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{round}\PYG{p}{(}\PYG{n}{future\PYGZus{}expenditure}\PYG{p}{,} \PYG{l+m+mi}{2}\PYG{p}{),}
+    \PYG{l+s+s1}{\PYGZsq{}增长率(\PYGZpc{})\PYGZsq{}}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{round}\PYG{p}{(}\PYG{n}{growth\PYGZus{}rates}\PYG{p}{,} \PYG{l+m+mi}{2}\PYG{p}{)}
+\PYG{p}{\PYGZcb{})}
+\end{Verbatim}

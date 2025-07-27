@@ -1,0 +1,49 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import} \PYG{n+nn}{pandas} \PYG{k}{as} \PYG{n+nn}{pd}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
+
+\PYG{c+c1}{\PYGZsh{} 读取文件}
+\PYG{n}{excel\PYGZus{}file} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{ExcelFile}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}第二问指标.xlsx\PYGZsq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 获取指定工作表中的数据}
+\PYG{n}{df} \PYG{o}{=} \PYG{n}{excel\PYGZus{}file}\PYG{o}{.}\PYG{n}{parse}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Sheet1\PYGZsq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 查看数据的基本信息}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}数据基本信息：\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{df}\PYG{o}{.}\PYG{n}{info}\PYG{p}{()}
+
+\PYG{c+c1}{\PYGZsh{} 查看数据集行数和列数}
+\PYG{n}{rows}\PYG{p}{,} \PYG{n}{columns} \PYG{o}{=} \PYG{n}{df}\PYG{o}{.}\PYG{n}{shape}
+
+\PYG{k}{if} \PYG{n}{rows} \PYG{o}{\PYGZlt{}} \PYG{l+m+mi}{100} \PYG{o+ow}{and} \PYG{n}{columns} \PYG{o}{\PYGZlt{}} \PYG{l+m+mi}{20}\PYG{p}{:}
+    \PYG{c+c1}{\PYGZsh{} 短表数据（行数少于100且列数少于20）查看全量数据信息}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}数据全部内容信息：\PYGZsq{}}\PYG{p}{)}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{df}\PYG{o}{.}\PYG{n}{to\PYGZus{}csv}\PYG{p}{(}\PYG{n}{sep}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+se}{\PYGZbs{}t}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{na\PYGZus{}rep}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}nan\PYGZsq{}}\PYG{p}{))}
+\PYG{k}{else}\PYG{p}{:}
+    \PYG{c+c1}{\PYGZsh{} 长表数据查看数据前几行信息}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}数据前几行内容信息：\PYGZsq{}}\PYG{p}{)}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{df}\PYG{o}{.}\PYG{n}{head}\PYG{p}{()}\PYG{o}{.}\PYG{n}{to\PYGZus{}csv}\PYG{p}{(}\PYG{n}{sep}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+se}{\PYGZbs{}t}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{na\PYGZus{}rep}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}nan\PYGZsq{}}\PYG{p}{))}
+\PYG{c+c1}{\PYGZsh{} 提取需要的指标数据}
+\PYG{n}{selected\PYGZus{}columns} \PYG{o}{=} \PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}研究生毕业生占比\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}高等学校专任教师数占比\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}师生比\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}生均教育经费\PYGZsq{}}\PYG{p}{]}
+\PYG{n}{new\PYGZus{}df} \PYG{o}{=} \PYG{n}{df}\PYG{p}{[}\PYG{n}{selected\PYGZus{}columns}\PYG{p}{]}
+
+\PYG{c+c1}{\PYGZsh{} 对数据进行标准化}
+\PYG{n}{P} \PYG{o}{=} \PYG{n}{new\PYGZus{}df}\PYG{o}{.}\PYG{n}{div}\PYG{p}{(}\PYG{n}{new\PYGZus{}df}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{n}{axis}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{),} \PYG{n}{axis}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 计算每个指标的熵值}
+\PYG{n}{E} \PYG{o}{=} \PYG{o}{\PYGZhy{}}\PYG{p}{(}\PYG{n}{P} \PYG{o}{*} \PYG{n}{np}\PYG{o}{.}\PYG{n}{log}\PYG{p}{(}\PYG{n}{P}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{([}\PYG{n}{np}\PYG{o}{.}\PYG{n}{inf}\PYG{p}{,} \PYG{o}{\PYGZhy{}}\PYG{n}{np}\PYG{o}{.}\PYG{n}{inf}\PYG{p}{],} \PYG{l+m+mi}{0}\PYG{p}{))}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{n}{axis}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{)} \PYG{o}{/} \PYG{n}{np}\PYG{o}{.}\PYG{n}{log}\PYG{p}{(}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{P}\PYG{p}{))}
+
+\PYG{c+c1}{\PYGZsh{} 计算每个指标的差异系数}
+\PYG{n}{G} \PYG{o}{=} \PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{E}
+
+\PYG{c+c1}{\PYGZsh{} 计算每个指标的权重}
+\PYG{n}{W} \PYG{o}{=} \PYG{n}{G} \PYG{o}{/} \PYG{n}{G}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{()}
+
+\PYG{c+c1}{\PYGZsh{} 输出结果}
+\PYG{n}{result} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{DataFrame}\PYG{p}{(\PYGZob{}}
+    \PYG{l+s+s1}{\PYGZsq{}指标\PYGZsq{}}\PYG{p}{:} \PYG{n}{selected\PYGZus{}columns}\PYG{p}{,}
+    \PYG{l+s+s1}{\PYGZsq{}权重\PYGZsq{}}\PYG{p}{:} \PYG{n}{W}
+\PYG{p}{\PYGZcb{})}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{result}\PYG{p}{)}
+\end{Verbatim}

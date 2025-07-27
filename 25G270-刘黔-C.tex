@@ -9,6 +9,22 @@
 \usepackage{hyperref}
 
 \usepackage{url}
+\usepackage{minted}
+
+\definecolor{bg}{rgb}{0.95, 0.95, 0.95}
+
+\setminted{
+    linenos, % 显示行号
+    frame=lines, % 添加边框
+    framesep=2mm, % 设置边框与代码之间的间距
+    breaklines, % 自动换行
+    bgcolor=bg, % 设置背景颜色
+    baselinestretch = 1.0,
+    numbersep = 5pt,
+    numberblanklines = false,
+	tabsize = 4
+}
+
 \title{unsure}
 
 \begin{document}
@@ -486,6 +502,676 @@ $\beta_0$为常数项，$\varepsilon \_{t}$为随机误差项。
 %附录
 \appendix
 \section{源代码}
+
+\subsection{问题一源代码}
+
+\subsubsection{时间序列分析与预测}
+
+\begin{minted}{python}
+import pandas as pd
+from statsmodels.tsa.arima.model import ARIMA
+
+excel_file = pd.ExcelFile('国赛校赛第一问数据2.0.xlsx')
+df = excel_file.parse('Sheet1')
+
+df.set_index('年份', inplace=True)
+
+def arima_forecast(data, order=(1, 1, 1), steps=22):
+    model = ARIMA(data, order=order)
+    model_fit = model.fit()
+    return model_fit.forecast(steps=steps)
+
+# 预测高等教育毛入学率
+higher_education_forecast = arima_forecast(df['高等教育毛入学率（%）'])
+
+# 预测 GDP
+gdp_forecast = arima_forecast(df['GDP（亿元）'])
+\end{minted}
+
+\subsubsection{人口预测}
+
+\begin{minted}{python3}
+import pandas as pd
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+import matplotlib.pyplot as plt
+from scipy import stats
+import numpy as np
+from matplotlib.font_manager import FontProperties
+plt.rcParams['figure.facecolor']='#F4FCF8'
+plt.rcParams['axes.facecolor']='#F4FCF8'
+# 设置中文字体
+font = FontProperties(fname=r"C:\Windows\Fonts\simsun.ttc", size=12)
+plt.rcParams['font.family'] = font.get_name()
+plt.rcParams['axes.unicode_minus'] = False
+excel_file_1 = pd.ExcelFile('国赛校赛第一问数据2.0.xlsx')
+sheet_names_1 = excel_file_1.sheet_names
+for sheet_name in sheet_names_1:
+    df = excel_file_1.parse(sheet_name)
+    #print(f'sheet表名为{sheet_name}的基本信息：')
+    df.info()
+    rows, columns = df.shape
+    # if rows < 100 and columns < 20:
+    #     #print(f'sheet表名为{sheet_name}的全部内容信息：')
+    #     #print(df.to_csv(sep='\t', na_rep='nan'))
+    # else:
+        # 长表数据查看数据前几行信息
+        #print(f'sheet表名为{sheet_name}的前几行内容信息：')
+        #print(df.head().to_csv(sep='\t', na_rep='nan'))
+
+excel_file_2 = pd.ExcelFile('预测GDP入学.xlsx')
+sheet_names_2 = excel_file_2.sheet_names
+for sheet_name in sheet_names_2:
+    df = excel_file_2.parse(sheet_name)
+    #print(f'sheet表名为{sheet_name}的基本信息：')
+    df.info()
+
+    rows, columns = df.shape
+
+    # if rows < 100 and columns < 20:
+    #
+    #     print(f'sheet表名为{sheet_name}的全部内容信息：')
+    #     print(df.to_csv(sep='\t', na_rep='nan'))
+    # else:
+    #
+    #     print(f'sheet表名为{sheet_name}的前几行内容信息：')
+    #     print(df.head().to_csv(sep='\t', na_rep='nan'))
+
+df1 = excel_file_1.parse('Sheet1')
+df2 = excel_file_2.parse('Sheet1')
+poly = PolynomialFeatures(degree=2)
+X_poly = poly.fit_transform(df1[['GDP（亿元）', '高等教育毛入学率（%）']])
+
+model = LinearRegression()
+model.fit(X_poly, df1['人口总数（万人）'])
+
+future_X_poly = poly.transform(df2[['GDP（亿元）', '高等教育毛入学率（%）']])
+
+future_population = model.predict(future_X_poly)
+
+df2['人口总数（万人）预测值'] = future_population
+
+y_pred = model.predict(X_poly)
+
+residuals = df1['人口总数（万人）'] - y_pred
+
+# 绘制残差图
+plt.figure(figsize=(10, 6))
+for x, y in zip(y_pred, residuals):
+    half_length = abs(y) *5
+    plt.vlines(x, y - half_length, y + half_length, color='#D8BFD8', alpha=0.95)
+plt.scatter(y_pred, residuals,marker='o',color= '#FFB6C1')
+plt.axhline(y=0, color='#FFA500', linestyle='--')
+plt.xlabel('预测值（万人）',fontsize=15)
+#plt.xticks(rotation=45)
+plt.ylabel('残差（万人）',fontsize=15)
+plt.xticks(fontsize=16)
+plt.yticks(fontsize=16)
+plt.title('人口总数预测残差图')
+plt.grid(axis='y',linestyle='--')
+plt.show()
+
+mse = mean_squared_error(df1['人口总数（万人）'], y_pred)
+r2 = r2_score(df1['人口总数（万人）'], y_pred)
+
+# 计算置信区间
+n = len(df1)
+p = X_poly.shape[1]
+dof = n - p - 1
+t = stats.t.ppf(0.975, dof)
+residuals = df1['人口总数（万人）'] - y_pred
+std_error = np.sqrt(np.sum(residuals**2) / dof)
+margin_of_error = t * std_error * np.sqrt(1 + np.diag(X_poly @ np.linalg.inv(X_poly.T @ X_poly) @ X_poly.T))
+lower_bound = y_pred - margin_of_error
+upper_bound = y_pred + margin_of_error
+
+XtX_inv = np.linalg.inv(X_poly.T @ X_poly)
+se_future = np.sqrt(mse * (1 + np.diag(future_X_poly @ XtX_inv @ future_X_poly.T)))
+lower_bound_future = future_population - t * se_future
+upper_bound_future = future_population + t * se_future
+
+# 绘制预测结果和置信区间
+plt.figure(figsize=(12, 6))
+plt.plot(df1['年份'], df1['人口总数（万人）'], color='#ff6f91',label='实际人口总数', marker='o')
+plt.plot(df2['年份'], df2['人口总数（万人）预测值'],color='#FAAB52', label='未来人口总数预测值', marker='o')
+plt.fill_between(df1['年份'], lower_bound, upper_bound, color='#B694ED', alpha=0.2, label='95% 置信区间')
+plt.fill_between(df2['年份'], lower_bound_future, upper_bound_future, color='lightgreen', alpha=0.2, label='预测数据95%置信区间')
+# 标注2030年，2035年和2045年的数据
+for year in [2030, 2035, 2045]:
+    if year in df2['年份'].values:
+        pop = df2[df2['年份'] == year]['人口总数（万人）预测值'].values[0]
+        plt.annotate(f'{year}年: {pop:.2f}万人', xy=(year, pop), xytext=(10, 10), textcoords='offset points', arrowprops=dict(arrowstyle='->'))
+plt.xticks(np.arange(min(df1['年份'].min(), df2['年份'].min()), max(df1['年份'].max(), df2['年份'].max()) + 1, 5))
+plt.xlabel('年份',fontsize=15)
+plt.ylabel('人口总数（万人）',fontsize=15)
+plt.title('人口总数预测及置信区间')
+plt.legend()
+plt.grid(axis='y',linestyle='--')
+plt.xticks(fontsize=16)
+plt.yticks(fontsize=16)
+plt.show()
+
+# 生成网格数据用于绘制三维曲面
+gdp_min, gdp_max = df1['GDP（亿元）'].min(), df1['GDP（亿元）'].max()
+enrollment_min, enrollment_max = df1['高等教育毛入学率（%）'].min(), df1['高等教育毛入学率（%）'].max()
+gdp_grid, enrollment_grid = np.meshgrid(
+    np.linspace(gdp_min, gdp_max, 100),
+    np.linspace(enrollment_min, enrollment_max, 100)
+)
+
+# 将网格数据转换为适合模型预测的格式
+grid_data = np.column_stack([gdp_grid.ravel(), enrollment_grid.ravel()])
+grid_poly = poly.transform(grid_data)
+
+# 进行预测
+predicted_population = model.predict(grid_poly)
+predicted_population = predicted_population.reshape(gdp_grid.shape)
+
+# 创建三维图
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+
+# 绘制三维曲面
+ax.plot_surface(gdp_grid, enrollment_grid, predicted_population, cmap='viridis', alpha=0.5)
+ax.scatter(df1['GDP（亿元）'], df1['高等教育毛入学率（%）'], df1['人口总数（万人）'], c='r', marker='o')
+# 设置坐标轴标签和标题
+ax.set_xlabel('GDP（亿元）')
+ax.set_ylabel('高等教育毛入学率（%）')
+ax.set_zlabel('人口总数（万人）')
+ax.set_title('多元非线性回归模型预测人口总数三维曲面')
+
+plt.show()
+
+print('模型均方误差：', mse)
+print('模型决定系数：', r2)
+print('未来 20 年人口总数预测结果：')
+print(df2[['年份', '人口总数（万人）预测值']])
+\end{minted}
+
+\subsection{问题二源代码}
+
+\subsubsection{教育指标权重计算}
+
+\begin{minted}{python3}
+import pandas as pd
+import numpy as np
+
+# 读取文件
+excel_file = pd.ExcelFile('第二问指标.xlsx')
+
+# 获取指定工作表中的数据
+df = excel_file.parse('Sheet1')
+
+# 查看数据的基本信息
+print('数据基本信息：')
+df.info()
+
+# 查看数据集行数和列数
+rows, columns = df.shape
+
+if rows < 100 and columns < 20:
+    # 短表数据（行数少于100且列数少于20）查看全量数据信息
+    print('数据全部内容信息：')
+    print(df.to_csv(sep='\t', na_rep='nan'))
+else:
+    # 长表数据查看数据前几行信息
+    print('数据前几行内容信息：')
+    print(df.head().to_csv(sep='\t', na_rep='nan'))
+# 提取需要的指标数据
+selected_columns = ['研究生毕业生占比', '高等学校专任教师数占比', '师生比', '生均教育经费']
+new_df = df[selected_columns]
+
+# 对数据进行标准化
+P = new_df.div(new_df.sum(axis=0), axis=1)
+
+# 计算每个指标的熵值
+E = -(P * np.log(P).replace([np.inf, -np.inf], 0)).sum(axis=0) / np.log(len(P))
+
+# 计算每个指标的差异系数
+G = 1 - E
+
+# 计算每个指标的权重
+W = G / G.sum()
+
+# 输出结果
+result = pd.DataFrame({
+    '指标': selected_columns,
+    '权重': W
+})
+
+print(result)
+\end{minted}
+
+\subsubsection{灰度预测}
+
+\begin{minted}{python3}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error
+
+
+def grey_model(data):
+    AGO = np.cumsum(data)
+
+    Z = (AGO[:-1] + AGO[1:]) / 2.0
+
+    # 构造矩阵B和Y
+    B = np.vstack((-Z, np.ones(len(Z)))).T
+    Y = data[1:].reshape(len(Z), 1)
+
+    # 计算参数a和b
+    a, b = np.dot(np.linalg.pinv(B), Y)
+
+    # 预测函数
+    def predict(k):
+        return (data[0] - b / a) * np.exp(-a * k) + b / a
+
+    # 计算模拟值
+    sim_values = []
+    sim_values.append(data[0])
+    for i in range(1, len(data)):
+        sim_values.append(predict(i))
+
+    # 模型检验
+    errors = data - sim_values
+    S1 = np.std(data, ddof=1)
+    S2 = np.std(errors, ddof=1)
+    C = S2 / S1
+    P = np.sum(np.abs(errors - np.mean(errors)) < 0.6745 * S1) / len(data)
+
+    return predict, sim_values, (a[0], b[0]), (C[0], P[0])
+
+
+# 1. 读取历史数据
+history_df = pd.read_excel('生均教育经费.xlsx')
+years = history_df['年份'].values
+population = history_df['人口总数（万人）'].values
+expenditure = history_df['生均教育经费(元)'].values
+
+# 2. 灰度模型预测
+predict_func, sim_values, (a, b), (C, P) = grey_model(expenditure)
+
+print(f"灰色模型参数: a={a:.4f}, b={b:.2f}")
+print(f"模型检验: 后验差比值C={C:.4f}, 小误差概率P={P:.4f}")
+
+# 3. 读取未来人口数据
+future_df = pd.read_excel('第一问预测结果.xlsx')
+future_years = future_df['年份'].values
+future_population = future_df['人口总数（万人）'].values
+
+# 4. 预测未来生均经费
+future_k = np.arange(len(expenditure), len(expenditure) + len(future_years))
+future_expenditure = [predict_func(k) for k in future_k]
+
+# 5. 计算增长率
+growth_rates = [(future_expenditure[i] - future_expenditure[i - 1]) / future_expenditure[i - 1] * 100
+                for i in range(1, len(future_expenditure))]
+growth_rates.insert(0, np.nan)
+
+# 6. 创建结果DataFrame
+result_df = pd.DataFrame({
+    '年份': future_years,
+    '预测人口(万人)': future_population,
+    '预测生均经费(元)': np.round(future_expenditure, 2),
+    '增长率(%)': np.round(growth_rates, 2)
+})
+\end{minted}
+
+\subsubsection{归一化处理}
+
+\begin{minted}{python3}
+import pandas as pd
+
+# 1. 原始数据（年份 + 指标值）
+data = [
+    (2024, 0.0926), (2025, 0.0957), (2026, 0.0989), (2027, 0.1023),
+    (2028, 0.1057), (2029, 0.1093), (2030, 0.113),  (2031, 0.1168),
+    (2032, 0.1208), (2033, 0.1249), (2034, 0.1291), (2035, 0.1335),
+    (2036, 0.138),  (2037, 0.1427), (2038, 0.1475), (2039, 0.1525),
+    (2040, 0.1577), (2041, 0.1631), (2042, 0.1686), (2043, 0.1744),
+    (2044, 0.1783), (2045, 0.1824)
+]
+
+# 2. 转换为 DataFrame
+df = pd.DataFrame(data, columns=["年份", "指标值"])
+
+# 3. 归一化计算
+min_val = df["指标值"].min()
+max_val = df["指标值"].max()
+df["标准化值"] = (df["指标值"] - min_val) / (max_val - min_val)
+
+# 4. 写入 Excel
+output_path = "教育指标标准化结果.xlsx"
+df.to_excel(output_path, index=False, sheet_name="标准化数据")
+
+print(f"已保存到: {output_path}")
+print("最小值:", min_val)
+print("最大值:", max_val)
+print("标准化结果示例：")
+print(df.head())  # 打印前 5 行验证"
+\end{minted}
+
+
+\subsection{问题三源代码}
+
+\subsubsection{图一源代码}
+
+\begin{minted}{python3}
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
+from matplotlib.font_manager import FontProperties
+import numpy as np
+font = FontProperties(fname=r"C:\Windows\Fonts\simsun.ttc", size=12)
+plt.rcParams['font.family'] = font.get_name()
+plt.rcParams['axes.unicode_minus'] = False
+# 读取文件
+excel_file = pd.ExcelFile('第三问整合1.xlsx')
+
+# 获取指定工作表中的数据
+df = excel_file.parse('Sheet1')
+# 筛选 2010 - 2023 年的数据
+selected_df = df[(df['年份'] >= 1992) & (df['年份'] <= 2023)]
+
+
+
+x_new = np.linspace(selected_df['年份'].min(), selected_df['年份'].max(), 500)
+
+# 对标准化1进行插值
+f1 = interp1d(selected_df['年份'], selected_df['标准化1'], kind='cubic')
+y1_smooth = f1(x_new)
+
+# 对标准化2进行插值
+f2 = interp1d(selected_df['年份'], selected_df['标准化5'], kind='cubic')
+y2_smooth = f2(x_new)
+
+# 对标准化3进行插值，处理可能存在的缺失值
+f3 = interp1d(selected_df['年份'], selected_df['标准化3'], kind='cubic')
+y3_smooth = f3(x_new)
+
+# 绘制平滑折线图
+plt.figure(figsize=(10, 6))
+plt.plot(x_new, y1_smooth, label='第三产业占GDP比重（D）',color='#edfc78')
+plt.plot(x_new, y3_smooth, label='Y1（本科以上毕业生平均工资 / 社会平均工资）',color='#90b6a5')
+plt.plot(x_new, y2_smooth, label='本科毕业生人数（S）',color='#bea887')
+
+
+plt.scatter(selected_df['年份'], selected_df['标准化1'], marker='o', color='#edfc78')
+plt.scatter(selected_df['年份'], selected_df['标准化5'], marker='s', color='#bea887')
+plt.scatter(selected_df['年份'], selected_df['标准化3'], marker='^', color='#90b6a5')
+# 添加标题和标签
+plt.title('1992 - 2023 年 3 个标准化值折线图')
+plt.xlabel('年份',fontsize='12')
+plt.ylabel('标准化值',fontsize='12')
+plt.xticks(fontsize=13)
+plt.yticks(fontsize=13)
+# 添加图例
+plt.legend()
+# 显示网格
+plt.grid(axis='y',linestyle='--')
+
+# 显示图形
+plt.show()
+\end{minted}
+
+
+\subsubsection{图二源代码}
+
+\begin{minted}{python3}
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
+from matplotlib.font_manager import FontProperties
+import numpy as np
+font = FontProperties(fname=r"C:\Windows\Fonts\simsun.ttc", size=12)
+plt.rcParams['font.family'] = font.get_name()
+plt.rcParams['axes.unicode_minus'] = False
+# 读取文件
+excel_file = pd.ExcelFile('第三问整合1.xlsx')
+
+# 获取指定工作表中的数据
+df = excel_file.parse('Sheet1')
+# 筛选 2010 - 2023 年的数据
+selected_df = df[(df['年份'] >= 1992) & (df['年份'] <= 2023)]
+
+
+x_new = np.linspace(selected_df['年份'].min(), selected_df['年份'].max(), 500)
+
+# 对标准化1进行插值
+f1 = interp1d(selected_df['年份'], selected_df['标准化1'], kind='cubic')
+y1_smooth = f1(x_new)
+
+# 对标准化2进行插值
+f2 = interp1d(selected_df['年份'], selected_df['标准化4'], kind='cubic')
+y2_smooth = f2(x_new)
+
+# 对标准化3进行插值，处理可能存在的缺失值
+f3 = interp1d(selected_df['年份'], selected_df['标准化5'], kind='cubic')
+y3_smooth = f3(x_new)
+
+# 绘制平滑折线图
+plt.figure(figsize=(10, 6))
+plt.plot(x_new, y1_smooth, label='第三产业占GDP比重（D）',color='#cbf4a5')
+plt.plot(x_new, y2_smooth, label='Y2（失业率）',color='#27c49c')
+plt.plot(x_new, y3_smooth, label='本科毕业生人数（S）',color='#008da7')
+
+plt.scatter(selected_df['年份'], selected_df['标准化1'], marker='o', color='#cbf4a5')
+plt.scatter(selected_df['年份'], selected_df['标准化4'], marker='s', color='#27c49c')
+plt.scatter(selected_df['年份'], selected_df['标准化5'], marker='^', color='#008da7')
+# 添加标题和标签
+plt.title('1992 - 2023 年 3 个标准化值折线图')
+plt.xlabel('年份',fontsize='12')
+plt.ylabel('标准化值',fontsize='12')
+plt.xticks(fontsize=13)
+plt.yticks(fontsize=13)
+# 添加图例
+plt.legend()
+# 显示网格
+plt.grid(axis='y',linestyle='--')
+
+# 显示图形
+plt.show()
+\end{minted}
+
+\subsubsection{模型一源代码}
+
+\begin{minted}{python3}
+import pandas as pd
+import seaborn as sns
+import numpy as np
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
+font = FontProperties(fname=r"C:\Windows\Fonts\simsun.ttc", size=12)
+plt.rcParams['font.family'] = font.get_name()
+plt.rcParams['axes.unicode_minus'] = False
+# 1. 数据读取与预处理
+df = pd.read_excel('第三问整合1.xlsx')
+df = df[df['年份']>=2013]
+# 提取需要的列
+data = df[['年份', '高/平均', '研究生毕业人数', 'GDP增长指数']].copy()
+
+# 计算研究生毕业人数增长率(S_t)
+data['S_t'] = data['研究生毕业人数'].pct_change() * 100  # 转换为百分比
+
+# 计算GDP增长率(G_t)，假设GDP增长指数基期为100
+data['G_t'] = data['GDP增长指数'].pct_change() * 100
+
+# 计算供给增速差(S_t - G_t)
+data['供给增速差'] = data['S_t'] - data['G_t']
+
+# 删除缺失值（第一年没有增长率）
+data = data.dropna()
+
+# 2. 模型构建
+X = data['供给增速差']
+y = data['高/平均']
+X = sm.add_constant(X)  # 添加常数项
+
+model = sm.OLS(y, X)
+results = model.fit()
+
+print("="*50)
+print("供需失衡与收入贬值模型回归结果")
+print("="*50)
+print(results.summary())
+print("\n关键结论：")
+print(f"- 供给增速差系数: {results.params[1]:.4f} (p值={results.pvalues[1]:.4f})")
+print(f"- 模型R平方: {results.rsquared:.4f}")
+
+# 4. 可视化
+plt.figure(figsize=(12, 6))
+
+
+
+# 散点图与回归线
+plt.subplot(1, 2, 1)
+plt.scatter(data['供给增速差'], y, alpha=0.7,color='#949fff')
+plt.plot(data['供给增速差'], results.fittedvalues, 'r-',color='#ffe8ff')
+plt.xlabel('供给增速差 (S_t - G_t)%')
+plt.ylabel('高学历/平均工资比值')
+plt.title('供需关系对工资比值的影响')
+plt.grid(axis='y',linestyle='--')
+plt.legend()
+# 残差诊断图
+plt.subplot(1, 2, 2)
+plt.scatter(results.fittedvalues, results.resid, alpha=0.7,color='#ffba8c')
+plt.axhline(y=0, color='#b3a7b7', linestyle='--')
+plt.xlabel('预测值')
+plt.ylabel('残差')
+plt.title('残差诊断图')
+plt.grid(axis='y',linestyle='--')
+plt.legend()
+plt.tight_layout()
+plt.show()
+# 5. 输出关键指标表格
+result_table = pd.DataFrame({
+    '年份': data['年份'],
+    '高学历/平均工资': data['高/平均'],
+    '研究生毕业人数增长率(%)': data['S_t'].round(2),
+    'GDP增长率(%)': data['G_t'].round(2),
+    '供给增速差(%)': data['供给增速差'].round(2),
+    '模型预测值': results.fittedvalues.round(4)
+})
+
+print("\n详细计算结果：")
+print(result_table.to_string(index=False))
+\end{minted}
+
+\subsubsection{模型二源代码}
+
+\begin{minted}{python3}
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.font_manager import FontProperties
+font = FontProperties(fname=r"C:\Windows\Fonts\simsun.ttc", size=12)
+plt.rcParams['font.family'] = font.get_name()
+plt.rcParams['axes.unicode_minus'] = False
+# 1. 数据读取与预处理
+df = pd.read_excel('第三问整合1.xlsx')
+df = df[df['年份']>=2018]
+# 提取需要的列
+data = df[['年份', '失业率', '研究生毕业人数', 'GDP增长指数']].copy()
+
+# 计算研究生毕业人数增长率(S_t)
+data['S_t'] = data['研究生毕业人数'].pct_change() * 100  # 转换为百分比
+
+# 计算GDP增长率(G_t)，假设GDP增长指数基期为100
+data['G_t'] = data['GDP增长指数'].pct_change() * 100
+
+# 计算供给增速差(S_t - G_t)
+data['供给增速差'] = data['S_t'] - data['G_t']
+
+# 删除缺失值（第一年没有增长率）
+data = data.dropna()
+
+# 2. 多元线性回归模型构建
+X = data[['供给增速差', 'G_t']]
+y = data['失业率']
+X = sm.add_constant(X)  # 添加常数项
+
+model = sm.OLS(y, X)
+results = model.fit()
+
+# 3. 结果分析
+print("="*60)
+print("供需失衡与就业贬值模型回归结果")
+print("="*60)
+print(results.summary())
+print("\n关键结论：")
+print(f"- 供给增速差系数: {results.params[1]:.4f} (p值={results.pvalues[1]:.4f})")
+print(f"- GDP增长率系数: {results.params[2]:.4f} (p值={results.pvalues[2]:.4f})")
+print(f"- 模型R平方: {results.rsquared:.4f}")
+
+# 4. 可视化分析
+plt.figure(figsize=(18, 6))
+
+# 子图1：供给增速差与失业率关系
+plt.subplot(1, 3, 1)
+plt.scatter(data['供给增速差'], y, alpha=0.7)
+plt.xlabel('供给增速差 (S_t - G_t)%')
+plt.ylabel('失业率(%)')
+plt.title('供给过剩对失业率的影响')
+plt.grid(True)
+
+# 添加回归线（控制其他变量）
+x_pred = np.linspace(data['供给增速差'].min(), data['供给增速差'].max(), 100)
+g_mean = data['G_t'].mean()  # 固定GDP增长率为均值
+y_pred = results.params[0] + results.params[1]*x_pred + results.params[2]*g_mean
+plt.plot(x_pred, y_pred, 'r-')
+
+# 子图2：GDP增长率与失业率关系
+plt.subplot(1, 3, 2)
+plt.scatter(data['G_t'], y, alpha=0.7)
+plt.xlabel('GDP增长率(%)')
+plt.ylabel('失业率(%)')
+plt.title('经济增长对失业率的影响')
+plt.grid(True)
+
+# 添加回归线（控制其他变量）
+x_pred = np.linspace(data['G_t'].min(), data['G_t'].max(), 100)
+s_mean = data['供给增速差'].mean()  # 固定供给增速差为均值
+y_pred = results.params[0] + results.params[1]*s_mean + results.params[2]*x_pred
+plt.plot(x_pred, y_pred, 'r-')
+
+# 子图3：3D关系图
+ax = plt.subplot(1, 3, 3, projection='3d')
+ax.scatter(data['供给增速差'], data['G_t'], y, c='b', marker='o')
+ax.set_xlabel('供给增速差(%)')
+ax.set_ylabel('GDP增长率(%)')
+ax.set_zlabel('失业率(%)')
+ax.set_title('三维影响因素关系')
+
+# 生成回归平面
+x_surf = np.linspace(data['供给增速差'].min(), data['供给增速差'].max(), 10)
+y_surf = np.linspace(data['G_t'].min(), data['G_t'].max(), 10)
+x_surf, y_surf = np.meshgrid(x_surf, y_surf)
+z_pred = results.params[0] + results.params[1]*x_surf + results.params[2]*y_surf
+ax.plot_surface(x_surf, y_surf, z_pred, color='r', alpha=0.3)
+
+plt.tight_layout()
+plt.show()
+
+# 5. 输出关键指标表格
+result_table = pd.DataFrame({
+    '年份': data['年份'],
+    '失业率(%)': data['失业率'],
+    '研究生毕业人数增长率(%)': data['S_t'].round(2),
+    'GDP增长率(%)': data['G_t'].round(2),
+    '供给增速差(%)': data['供给增速差'].round(2),
+    '模型预测失业率(%)': results.fittedvalues.round(2)
+})
+
+print("\n详细计算结果：")
+print(result_table.to_string(index=False))
+\end{minted}
+
+
 
 \newpage
 
