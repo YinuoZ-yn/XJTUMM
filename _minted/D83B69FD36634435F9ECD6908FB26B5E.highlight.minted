@@ -1,0 +1,158 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{pandas}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{pd}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{sklearn}\PYG{n+nn}{.}\PYG{n+nn}{preprocessing}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{PolynomialFeatures}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{sklearn}\PYG{n+nn}{.}\PYG{n+nn}{linear\PYGZus{}model}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{LinearRegression}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{sklearn}\PYG{n+nn}{.}\PYG{n+nn}{metrics}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{mean\PYGZus{}squared\PYGZus{}error}\PYG{p}{,} \PYG{n}{r2\PYGZus{}score}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{matplotlib}\PYG{n+nn}{.}\PYG{n+nn}{pyplot}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{plt}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{scipy}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{stats}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{matplotlib}\PYG{n+nn}{.}\PYG{n+nn}{font\PYGZus{}manager}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{FontProperties}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{rcParams}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{figure.facecolor}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{\PYGZsh{}F4FCF8}\PYG{l+s+s1}{\PYGZsq{}}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{rcParams}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{axes.facecolor}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{\PYGZsh{}F4FCF8}\PYG{l+s+s1}{\PYGZsq{}}
+\PYG{c+c1}{\PYGZsh{} 设置中文字体}
+\PYG{n}{font} \PYG{o}{=} \PYG{n}{FontProperties}\PYG{p}{(}\PYG{n}{fname}\PYG{o}{=}\PYG{l+s+sa}{r}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{C:}\PYG{l+s+s2}{\PYGZbs{}}\PYG{l+s+s2}{Windows}\PYG{l+s+s2}{\PYGZbs{}}\PYG{l+s+s2}{Fonts}\PYG{l+s+s2}{\PYGZbs{}}\PYG{l+s+s2}{simsun.ttc}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,} \PYG{n}{size}\PYG{o}{=}\PYG{l+m+mi}{12}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{rcParams}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{font.family}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]} \PYG{o}{=} \PYG{n}{font}\PYG{o}{.}\PYG{n}{get\PYGZus{}name}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{rcParams}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{axes.unicode\PYGZus{}minus}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]} \PYG{o}{=} \PYG{k+kc}{False}
+\PYG{n}{excel\PYGZus{}file\PYGZus{}1} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{ExcelFile}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{国赛校赛第一问数据2.0.xlsx}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{sheet\PYGZus{}names\PYGZus{}1} \PYG{o}{=} \PYG{n}{excel\PYGZus{}file\PYGZus{}1}\PYG{o}{.}\PYG{n}{sheet\PYGZus{}names}
+\PYG{k}{for} \PYG{n}{sheet\PYGZus{}name} \PYG{o+ow}{in} \PYG{n}{sheet\PYGZus{}names\PYGZus{}1}\PYG{p}{:}
+    \PYG{n}{df} \PYG{o}{=} \PYG{n}{excel\PYGZus{}file\PYGZus{}1}\PYG{o}{.}\PYG{n}{parse}\PYG{p}{(}\PYG{n}{sheet\PYGZus{}name}\PYG{p}{)}
+    \PYG{c+c1}{\PYGZsh{}print(f\PYGZsq{}sheet表名为\PYGZob{}sheet\PYGZus{}name\PYGZcb{}的基本信息：\PYGZsq{})}
+    \PYG{n}{df}\PYG{o}{.}\PYG{n}{info}\PYG{p}{(}\PYG{p}{)}
+    \PYG{n}{rows}\PYG{p}{,} \PYG{n}{columns} \PYG{o}{=} \PYG{n}{df}\PYG{o}{.}\PYG{n}{shape}
+    \PYG{c+c1}{\PYGZsh{} if rows \PYGZlt{} 100 and columns \PYGZlt{} 20:}
+    \PYG{c+c1}{\PYGZsh{}     \PYGZsh{}print(f\PYGZsq{}sheet表名为\PYGZob{}sheet\PYGZus{}name\PYGZcb{}的全部内容信息：\PYGZsq{})}
+    \PYG{c+c1}{\PYGZsh{}     \PYGZsh{}print(df.to\PYGZus{}csv(sep=\PYGZsq{}\PYGZbs{}t\PYGZsq{}, na\PYGZus{}rep=\PYGZsq{}nan\PYGZsq{}))}
+    \PYG{c+c1}{\PYGZsh{} else:}
+        \PYG{c+c1}{\PYGZsh{} 长表数据查看数据前几行信息}
+        \PYG{c+c1}{\PYGZsh{}print(f\PYGZsq{}sheet表名为\PYGZob{}sheet\PYGZus{}name\PYGZcb{}的前几行内容信息：\PYGZsq{})}
+        \PYG{c+c1}{\PYGZsh{}print(df.head().to\PYGZus{}csv(sep=\PYGZsq{}\PYGZbs{}t\PYGZsq{}, na\PYGZus{}rep=\PYGZsq{}nan\PYGZsq{}))}
+
+\PYG{n}{excel\PYGZus{}file\PYGZus{}2} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{ExcelFile}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{预测GDP入学.xlsx}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{sheet\PYGZus{}names\PYGZus{}2} \PYG{o}{=} \PYG{n}{excel\PYGZus{}file\PYGZus{}2}\PYG{o}{.}\PYG{n}{sheet\PYGZus{}names}
+\PYG{k}{for} \PYG{n}{sheet\PYGZus{}name} \PYG{o+ow}{in} \PYG{n}{sheet\PYGZus{}names\PYGZus{}2}\PYG{p}{:}
+    \PYG{n}{df} \PYG{o}{=} \PYG{n}{excel\PYGZus{}file\PYGZus{}2}\PYG{o}{.}\PYG{n}{parse}\PYG{p}{(}\PYG{n}{sheet\PYGZus{}name}\PYG{p}{)}
+    \PYG{c+c1}{\PYGZsh{}print(f\PYGZsq{}sheet表名为\PYGZob{}sheet\PYGZus{}name\PYGZcb{}的基本信息：\PYGZsq{})}
+    \PYG{n}{df}\PYG{o}{.}\PYG{n}{info}\PYG{p}{(}\PYG{p}{)}
+
+    \PYG{n}{rows}\PYG{p}{,} \PYG{n}{columns} \PYG{o}{=} \PYG{n}{df}\PYG{o}{.}\PYG{n}{shape}
+
+    \PYG{c+c1}{\PYGZsh{} if rows \PYGZlt{} 100 and columns \PYGZlt{} 20:}
+    \PYG{c+c1}{\PYGZsh{}}
+    \PYG{c+c1}{\PYGZsh{}     print(f\PYGZsq{}sheet表名为\PYGZob{}sheet\PYGZus{}name\PYGZcb{}的全部内容信息：\PYGZsq{})}
+    \PYG{c+c1}{\PYGZsh{}     print(df.to\PYGZus{}csv(sep=\PYGZsq{}\PYGZbs{}t\PYGZsq{}, na\PYGZus{}rep=\PYGZsq{}nan\PYGZsq{}))}
+    \PYG{c+c1}{\PYGZsh{} else:}
+    \PYG{c+c1}{\PYGZsh{}}
+    \PYG{c+c1}{\PYGZsh{}     print(f\PYGZsq{}sheet表名为\PYGZob{}sheet\PYGZus{}name\PYGZcb{}的前几行内容信息：\PYGZsq{})}
+    \PYG{c+c1}{\PYGZsh{}     print(df.head().to\PYGZus{}csv(sep=\PYGZsq{}\PYGZbs{}t\PYGZsq{}, na\PYGZus{}rep=\PYGZsq{}nan\PYGZsq{}))}
+
+\PYG{n}{df1} \PYG{o}{=} \PYG{n}{excel\PYGZus{}file\PYGZus{}1}\PYG{o}{.}\PYG{n}{parse}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{Sheet1}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{df2} \PYG{o}{=} \PYG{n}{excel\PYGZus{}file\PYGZus{}2}\PYG{o}{.}\PYG{n}{parse}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{Sheet1}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{poly} \PYG{o}{=} \PYG{n}{PolynomialFeatures}\PYG{p}{(}\PYG{n}{degree}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{)}
+\PYG{n}{X\PYGZus{}poly} \PYG{o}{=} \PYG{n}{poly}\PYG{o}{.}\PYG{n}{fit\PYGZus{}transform}\PYG{p}{(}\PYG{n}{df1}\PYG{p}{[}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{GDP（亿元）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{高等教育毛入学率（}\PYG{l+s+s1}{\PYGZpc{}}\PYG{l+s+s1}{）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{]}\PYG{p}{)}
+
+\PYG{n}{model} \PYG{o}{=} \PYG{n}{LinearRegression}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{model}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{X\PYGZus{}poly}\PYG{p}{,} \PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数（万人）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{)}
+
+\PYG{n}{future\PYGZus{}X\PYGZus{}poly} \PYG{o}{=} \PYG{n}{poly}\PYG{o}{.}\PYG{n}{transform}\PYG{p}{(}\PYG{n}{df2}\PYG{p}{[}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{GDP（亿元）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{高等教育毛入学率（}\PYG{l+s+s1}{\PYGZpc{}}\PYG{l+s+s1}{）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{]}\PYG{p}{)}
+
+\PYG{n}{future\PYGZus{}population} \PYG{o}{=} \PYG{n}{model}\PYG{o}{.}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{future\PYGZus{}X\PYGZus{}poly}\PYG{p}{)}
+
+\PYG{n}{df2}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数（万人）预测值}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]} \PYG{o}{=} \PYG{n}{future\PYGZus{}population}
+
+\PYG{n}{y\PYGZus{}pred} \PYG{o}{=} \PYG{n}{model}\PYG{o}{.}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{X\PYGZus{}poly}\PYG{p}{)}
+
+\PYG{n}{residuals} \PYG{o}{=} \PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数（万人）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{y\PYGZus{}pred}
+
+\PYG{c+c1}{\PYGZsh{} 绘制残差图}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{figure}\PYG{p}{(}\PYG{n}{figsize}\PYG{o}{=}\PYG{p}{(}\PYG{l+m+mi}{10}\PYG{p}{,} \PYG{l+m+mi}{6}\PYG{p}{)}\PYG{p}{)}
+\PYG{k}{for} \PYG{n}{x}\PYG{p}{,} \PYG{n}{y} \PYG{o+ow}{in} \PYG{n+nb}{zip}\PYG{p}{(}\PYG{n}{y\PYGZus{}pred}\PYG{p}{,} \PYG{n}{residuals}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n}{half\PYGZus{}length} \PYG{o}{=} \PYG{n+nb}{abs}\PYG{p}{(}\PYG{n}{y}\PYG{p}{)} \PYG{o}{*}\PYG{l+m+mi}{5}
+    \PYG{n}{plt}\PYG{o}{.}\PYG{n}{vlines}\PYG{p}{(}\PYG{n}{x}\PYG{p}{,} \PYG{n}{y} \PYG{o}{\PYGZhy{}} \PYG{n}{half\PYGZus{}length}\PYG{p}{,} \PYG{n}{y} \PYG{o}{+} \PYG{n}{half\PYGZus{}length}\PYG{p}{,} \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{\PYGZsh{}D8BFD8}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.95}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{scatter}\PYG{p}{(}\PYG{n}{y\PYGZus{}pred}\PYG{p}{,} \PYG{n}{residuals}\PYG{p}{,}\PYG{n}{marker}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{o}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,}\PYG{n}{color}\PYG{o}{=} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{\PYGZsh{}FFB6C1}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{axhline}\PYG{p}{(}\PYG{n}{y}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{\PYGZsh{}FFA500}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{linestyle}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{\PYGZhy{}\PYGZhy{}}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{xlabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{预测值（万人）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,}\PYG{n}{fontsize}\PYG{o}{=}\PYG{l+m+mi}{15}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{}plt.xticks(rotation=45)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{ylabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{残差（万人）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,}\PYG{n}{fontsize}\PYG{o}{=}\PYG{l+m+mi}{15}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{xticks}\PYG{p}{(}\PYG{n}{fontsize}\PYG{o}{=}\PYG{l+m+mi}{16}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{yticks}\PYG{p}{(}\PYG{n}{fontsize}\PYG{o}{=}\PYG{l+m+mi}{16}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数预测残差图}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{axis}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{y}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,}\PYG{n}{linestyle}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{\PYGZhy{}\PYGZhy{}}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{show}\PYG{p}{(}\PYG{p}{)}
+
+\PYG{n}{mse} \PYG{o}{=} \PYG{n}{mean\PYGZus{}squared\PYGZus{}error}\PYG{p}{(}\PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数（万人）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,} \PYG{n}{y\PYGZus{}pred}\PYG{p}{)}
+\PYG{n}{r2} \PYG{o}{=} \PYG{n}{r2\PYGZus{}score}\PYG{p}{(}\PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数（万人）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,} \PYG{n}{y\PYGZus{}pred}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 计算置信区间}
+\PYG{n}{n} \PYG{o}{=} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{df1}\PYG{p}{)}
+\PYG{n}{p} \PYG{o}{=} \PYG{n}{X\PYGZus{}poly}\PYG{o}{.}\PYG{n}{shape}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}
+\PYG{n}{dof} \PYG{o}{=} \PYG{n}{n} \PYG{o}{\PYGZhy{}} \PYG{n}{p} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}
+\PYG{n}{t} \PYG{o}{=} \PYG{n}{stats}\PYG{o}{.}\PYG{n}{t}\PYG{o}{.}\PYG{n}{ppf}\PYG{p}{(}\PYG{l+m+mf}{0.975}\PYG{p}{,} \PYG{n}{dof}\PYG{p}{)}
+\PYG{n}{residuals} \PYG{o}{=} \PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数（万人）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{y\PYGZus{}pred}
+\PYG{n}{std\PYGZus{}error} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{n}{residuals}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{2}\PYG{p}{)} \PYG{o}{/} \PYG{n}{dof}\PYG{p}{)}
+\PYG{n}{margin\PYGZus{}of\PYGZus{}error} \PYG{o}{=} \PYG{n}{t} \PYG{o}{*} \PYG{n}{std\PYGZus{}error} \PYG{o}{*} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{diag}\PYG{p}{(}\PYG{n}{X\PYGZus{}poly} \PYG{o}{@} \PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{inv}\PYG{p}{(}\PYG{n}{X\PYGZus{}poly}\PYG{o}{.}\PYG{n}{T} \PYG{o}{@} \PYG{n}{X\PYGZus{}poly}\PYG{p}{)} \PYG{o}{@} \PYG{n}{X\PYGZus{}poly}\PYG{o}{.}\PYG{n}{T}\PYG{p}{)}\PYG{p}{)}
+\PYG{n}{lower\PYGZus{}bound} \PYG{o}{=} \PYG{n}{y\PYGZus{}pred} \PYG{o}{\PYGZhy{}} \PYG{n}{margin\PYGZus{}of\PYGZus{}error}
+\PYG{n}{upper\PYGZus{}bound} \PYG{o}{=} \PYG{n}{y\PYGZus{}pred} \PYG{o}{+} \PYG{n}{margin\PYGZus{}of\PYGZus{}error}
+
+\PYG{n}{XtX\PYGZus{}inv} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{linalg}\PYG{o}{.}\PYG{n}{inv}\PYG{p}{(}\PYG{n}{X\PYGZus{}poly}\PYG{o}{.}\PYG{n}{T} \PYG{o}{@} \PYG{n}{X\PYGZus{}poly}\PYG{p}{)}
+\PYG{n}{se\PYGZus{}future} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{mse} \PYG{o}{*} \PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{diag}\PYG{p}{(}\PYG{n}{future\PYGZus{}X\PYGZus{}poly} \PYG{o}{@} \PYG{n}{XtX\PYGZus{}inv} \PYG{o}{@} \PYG{n}{future\PYGZus{}X\PYGZus{}poly}\PYG{o}{.}\PYG{n}{T}\PYG{p}{)}\PYG{p}{)}\PYG{p}{)}
+\PYG{n}{lower\PYGZus{}bound\PYGZus{}future} \PYG{o}{=} \PYG{n}{future\PYGZus{}population} \PYG{o}{\PYGZhy{}} \PYG{n}{t} \PYG{o}{*} \PYG{n}{se\PYGZus{}future}
+\PYG{n}{upper\PYGZus{}bound\PYGZus{}future} \PYG{o}{=} \PYG{n}{future\PYGZus{}population} \PYG{o}{+} \PYG{n}{t} \PYG{o}{*} \PYG{n}{se\PYGZus{}future}
+
+\PYG{c+c1}{\PYGZsh{} 绘制预测结果和置信区间}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{figure}\PYG{p}{(}\PYG{n}{figsize}\PYG{o}{=}\PYG{p}{(}\PYG{l+m+mi}{12}\PYG{p}{,} \PYG{l+m+mi}{6}\PYG{p}{)}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{年份}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,} \PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数（万人）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,} \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{\PYGZsh{}ff6f91}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,}\PYG{n}{label}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{实际人口总数}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{marker}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{o}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{df2}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{年份}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,} \PYG{n}{df2}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数（万人）预测值}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,}\PYG{n}{color}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{\PYGZsh{}FAAB52}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{label}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{未来人口总数预测值}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{marker}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{o}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{fill\PYGZus{}between}\PYG{p}{(}\PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{年份}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,} \PYG{n}{lower\PYGZus{}bound}\PYG{p}{,} \PYG{n}{upper\PYGZus{}bound}\PYG{p}{,} \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{\PYGZsh{}B694ED}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.2}\PYG{p}{,} \PYG{n}{label}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{95}\PYG{l+s+s1}{\PYGZpc{}}\PYG{l+s+s1}{ 置信区间}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{fill\PYGZus{}between}\PYG{p}{(}\PYG{n}{df2}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{年份}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,} \PYG{n}{lower\PYGZus{}bound\PYGZus{}future}\PYG{p}{,} \PYG{n}{upper\PYGZus{}bound\PYGZus{}future}\PYG{p}{,} \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{lightgreen}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.2}\PYG{p}{,} \PYG{n}{label}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{预测数据95}\PYG{l+s+s1}{\PYGZpc{}}\PYG{l+s+s1}{置信区间}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} 标注2030年，2035年和2045年的数据}
+\PYG{k}{for} \PYG{n}{year} \PYG{o+ow}{in} \PYG{p}{[}\PYG{l+m+mi}{2030}\PYG{p}{,} \PYG{l+m+mi}{2035}\PYG{p}{,} \PYG{l+m+mi}{2045}\PYG{p}{]}\PYG{p}{:}
+    \PYG{k}{if} \PYG{n}{year} \PYG{o+ow}{in} \PYG{n}{df2}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{年份}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{values}\PYG{p}{:}
+        \PYG{n}{pop} \PYG{o}{=} \PYG{n}{df2}\PYG{p}{[}\PYG{n}{df2}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{年份}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]} \PYG{o}{==} \PYG{n}{year}\PYG{p}{]}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数（万人）预测值}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{values}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}
+        \PYG{n}{plt}\PYG{o}{.}\PYG{n}{annotate}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{year}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s1}{年: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{pop}\PYG{l+s+si}{:}\PYG{l+s+s1}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s1}{万人}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{xy}\PYG{o}{=}\PYG{p}{(}\PYG{n}{year}\PYG{p}{,} \PYG{n}{pop}\PYG{p}{)}\PYG{p}{,} \PYG{n}{xytext}\PYG{o}{=}\PYG{p}{(}\PYG{l+m+mi}{10}\PYG{p}{,} \PYG{l+m+mi}{10}\PYG{p}{)}\PYG{p}{,} \PYG{n}{textcoords}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{offset points}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{arrowprops}\PYG{o}{=}\PYG{n+nb}{dict}\PYG{p}{(}\PYG{n}{arrowstyle}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{\PYGZhy{}\PYGZgt{}}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{xticks}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{arange}\PYG{p}{(}\PYG{n+nb}{min}\PYG{p}{(}\PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{年份}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{min}\PYG{p}{(}\PYG{p}{)}\PYG{p}{,} \PYG{n}{df2}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{年份}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{min}\PYG{p}{(}\PYG{p}{)}\PYG{p}{)}\PYG{p}{,} \PYG{n+nb}{max}\PYG{p}{(}\PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{年份}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{max}\PYG{p}{(}\PYG{p}{)}\PYG{p}{,} \PYG{n}{df2}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{年份}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{max}\PYG{p}{(}\PYG{p}{)}\PYG{p}{)} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{5}\PYG{p}{)}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{xlabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{年份}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,}\PYG{n}{fontsize}\PYG{o}{=}\PYG{l+m+mi}{15}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{ylabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数（万人）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,}\PYG{n}{fontsize}\PYG{o}{=}\PYG{l+m+mi}{15}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数预测及置信区间}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{legend}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{axis}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{y}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,}\PYG{n}{linestyle}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{\PYGZhy{}\PYGZhy{}}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{xticks}\PYG{p}{(}\PYG{n}{fontsize}\PYG{o}{=}\PYG{l+m+mi}{16}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{yticks}\PYG{p}{(}\PYG{n}{fontsize}\PYG{o}{=}\PYG{l+m+mi}{16}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{show}\PYG{p}{(}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 生成网格数据用于绘制三维曲面}
+\PYG{n}{gdp\PYGZus{}min}\PYG{p}{,} \PYG{n}{gdp\PYGZus{}max} \PYG{o}{=} \PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{GDP（亿元）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{min}\PYG{p}{(}\PYG{p}{)}\PYG{p}{,} \PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{GDP（亿元）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{max}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{enrollment\PYGZus{}min}\PYG{p}{,} \PYG{n}{enrollment\PYGZus{}max} \PYG{o}{=} \PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{高等教育毛入学率（}\PYG{l+s+s1}{\PYGZpc{}}\PYG{l+s+s1}{）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{min}\PYG{p}{(}\PYG{p}{)}\PYG{p}{,} \PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{高等教育毛入学率（}\PYG{l+s+s1}{\PYGZpc{}}\PYG{l+s+s1}{）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{max}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{gdp\PYGZus{}grid}\PYG{p}{,} \PYG{n}{enrollment\PYGZus{}grid} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{meshgrid}\PYG{p}{(}
+    \PYG{n}{np}\PYG{o}{.}\PYG{n}{linspace}\PYG{p}{(}\PYG{n}{gdp\PYGZus{}min}\PYG{p}{,} \PYG{n}{gdp\PYGZus{}max}\PYG{p}{,} \PYG{l+m+mi}{100}\PYG{p}{)}\PYG{p}{,}
+    \PYG{n}{np}\PYG{o}{.}\PYG{n}{linspace}\PYG{p}{(}\PYG{n}{enrollment\PYGZus{}min}\PYG{p}{,} \PYG{n}{enrollment\PYGZus{}max}\PYG{p}{,} \PYG{l+m+mi}{100}\PYG{p}{)}
+\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 将网格数据转换为适合模型预测的格式}
+\PYG{n}{grid\PYGZus{}data} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{column\PYGZus{}stack}\PYG{p}{(}\PYG{p}{[}\PYG{n}{gdp\PYGZus{}grid}\PYG{o}{.}\PYG{n}{ravel}\PYG{p}{(}\PYG{p}{)}\PYG{p}{,} \PYG{n}{enrollment\PYGZus{}grid}\PYG{o}{.}\PYG{n}{ravel}\PYG{p}{(}\PYG{p}{)}\PYG{p}{]}\PYG{p}{)}
+\PYG{n}{grid\PYGZus{}poly} \PYG{o}{=} \PYG{n}{poly}\PYG{o}{.}\PYG{n}{transform}\PYG{p}{(}\PYG{n}{grid\PYGZus{}data}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 进行预测}
+\PYG{n}{predicted\PYGZus{}population} \PYG{o}{=} \PYG{n}{model}\PYG{o}{.}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{grid\PYGZus{}poly}\PYG{p}{)}
+\PYG{n}{predicted\PYGZus{}population} \PYG{o}{=} \PYG{n}{predicted\PYGZus{}population}\PYG{o}{.}\PYG{n}{reshape}\PYG{p}{(}\PYG{n}{gdp\PYGZus{}grid}\PYG{o}{.}\PYG{n}{shape}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 创建三维图}
+\PYG{n}{fig} \PYG{o}{=} \PYG{n}{plt}\PYG{o}{.}\PYG{n}{figure}\PYG{p}{(}\PYG{n}{figsize}\PYG{o}{=}\PYG{p}{(}\PYG{l+m+mi}{10}\PYG{p}{,} \PYG{l+m+mi}{8}\PYG{p}{)}\PYG{p}{)}
+\PYG{n}{ax} \PYG{o}{=} \PYG{n}{fig}\PYG{o}{.}\PYG{n}{add\PYGZus{}subplot}\PYG{p}{(}\PYG{l+m+mi}{111}\PYG{p}{,} \PYG{n}{projection}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{3d}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 绘制三维曲面}
+\PYG{n}{ax}\PYG{o}{.}\PYG{n}{plot\PYGZus{}surface}\PYG{p}{(}\PYG{n}{gdp\PYGZus{}grid}\PYG{p}{,} \PYG{n}{enrollment\PYGZus{}grid}\PYG{p}{,} \PYG{n}{predicted\PYGZus{}population}\PYG{p}{,} \PYG{n}{cmap}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{viridis}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.5}\PYG{p}{)}
+\PYG{n}{ax}\PYG{o}{.}\PYG{n}{scatter}\PYG{p}{(}\PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{GDP（亿元）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,} \PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{高等教育毛入学率（}\PYG{l+s+s1}{\PYGZpc{}}\PYG{l+s+s1}{）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,} \PYG{n}{df1}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数（万人）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,} \PYG{n}{c}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{r}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{marker}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{o}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} 设置坐标轴标签和标题}
+\PYG{n}{ax}\PYG{o}{.}\PYG{n}{set\PYGZus{}xlabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{GDP（亿元）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{ax}\PYG{o}{.}\PYG{n}{set\PYGZus{}ylabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{高等教育毛入学率（}\PYG{l+s+s1}{\PYGZpc{}}\PYG{l+s+s1}{）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{ax}\PYG{o}{.}\PYG{n}{set\PYGZus{}zlabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数（万人）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{ax}\PYG{o}{.}\PYG{n}{set\PYGZus{}title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{多元非线性回归模型预测人口总数三维曲面}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{show}\PYG{p}{(}\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{模型均方误差：}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{mse}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{模型决定系数：}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{r2}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{未来 20 年人口总数预测结果：}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{df2}\PYG{p}{[}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{年份}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{人口总数（万人）预测值}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{]}\PYG{p}{)}
+\end{MintedVerbatim}

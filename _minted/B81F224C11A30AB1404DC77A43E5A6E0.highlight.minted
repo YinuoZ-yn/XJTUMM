@@ -1,0 +1,20 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{pandas}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{pd}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{statsmodels}\PYG{n+nn}{.}\PYG{n+nn}{tsa}\PYG{n+nn}{.}\PYG{n+nn}{arima}\PYG{n+nn}{.}\PYG{n+nn}{model}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{ARIMA}
+
+\PYG{n}{excel\PYGZus{}file} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{ExcelFile}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{国赛校赛第一问数据2.0.xlsx}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{df} \PYG{o}{=} \PYG{n}{excel\PYGZus{}file}\PYG{o}{.}\PYG{n}{parse}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{Sheet1}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+
+\PYG{n}{df}\PYG{o}{.}\PYG{n}{set\PYGZus{}index}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{年份}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{n}{inplace}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{arima\PYGZus{}forecast}\PYG{p}{(}\PYG{n}{data}\PYG{p}{,} \PYG{n}{order}\PYG{o}{=}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{,} \PYG{n}{steps}\PYG{o}{=}\PYG{l+m+mi}{22}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n}{model} \PYG{o}{=} \PYG{n}{ARIMA}\PYG{p}{(}\PYG{n}{data}\PYG{p}{,} \PYG{n}{order}\PYG{o}{=}\PYG{n}{order}\PYG{p}{)}
+    \PYG{n}{model\PYGZus{}fit} \PYG{o}{=} \PYG{n}{model}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{p}{)}
+    \PYG{k}{return} \PYG{n}{model\PYGZus{}fit}\PYG{o}{.}\PYG{n}{forecast}\PYG{p}{(}\PYG{n}{steps}\PYG{o}{=}\PYG{n}{steps}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 预测高等教育毛入学率}
+\PYG{n}{higher\PYGZus{}education\PYGZus{}forecast} \PYG{o}{=} \PYG{n}{arima\PYGZus{}forecast}\PYG{p}{(}\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{高等教育毛入学率（}\PYG{l+s+s1}{\PYGZpc{}}\PYG{l+s+s1}{）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 预测 GDP}
+\PYG{n}{gdp\PYGZus{}forecast} \PYG{o}{=} \PYG{n}{arima\PYGZus{}forecast}\PYG{p}{(}\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{GDP（亿元）}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{)}
+\end{MintedVerbatim}
