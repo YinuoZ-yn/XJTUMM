@@ -1,0 +1,37 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import} \PYG{n+nn}{pandas} \PYG{k}{as} \PYG{n+nn}{pd}
+
+\PYG{c+c1}{\PYGZsh{} 1. 原始数据（年份 + 指标值）}
+\PYG{n}{data} \PYG{o}{=} \PYG{p}{[}
+    \PYG{p}{(}\PYG{l+m+mi}{2024}\PYG{p}{,} \PYG{l+m+mf}{0.0926}\PYG{p}{),} \PYG{p}{(}\PYG{l+m+mi}{2025}\PYG{p}{,} \PYG{l+m+mf}{0.0957}\PYG{p}{),} \PYG{p}{(}\PYG{l+m+mi}{2026}\PYG{p}{,} \PYG{l+m+mf}{0.0989}\PYG{p}{),} \PYG{p}{(}\PYG{l+m+mi}{2027}\PYG{p}{,} \PYG{l+m+mf}{0.1023}\PYG{p}{),}
+    \PYG{p}{(}\PYG{l+m+mi}{2028}\PYG{p}{,} \PYG{l+m+mf}{0.1057}\PYG{p}{),} \PYG{p}{(}\PYG{l+m+mi}{2029}\PYG{p}{,} \PYG{l+m+mf}{0.1093}\PYG{p}{),} \PYG{p}{(}\PYG{l+m+mi}{2030}\PYG{p}{,} \PYG{l+m+mf}{0.113}\PYG{p}{),}  \PYG{p}{(}\PYG{l+m+mi}{2031}\PYG{p}{,} \PYG{l+m+mf}{0.1168}\PYG{p}{),}
+    \PYG{p}{(}\PYG{l+m+mi}{2032}\PYG{p}{,} \PYG{l+m+mf}{0.1208}\PYG{p}{),} \PYG{p}{(}\PYG{l+m+mi}{2033}\PYG{p}{,} \PYG{l+m+mf}{0.1249}\PYG{p}{),} \PYG{p}{(}\PYG{l+m+mi}{2034}\PYG{p}{,} \PYG{l+m+mf}{0.1291}\PYG{p}{),} \PYG{p}{(}\PYG{l+m+mi}{2035}\PYG{p}{,} \PYG{l+m+mf}{0.1335}\PYG{p}{),}
+    \PYG{p}{(}\PYG{l+m+mi}{2036}\PYG{p}{,} \PYG{l+m+mf}{0.138}\PYG{p}{),}  \PYG{p}{(}\PYG{l+m+mi}{2037}\PYG{p}{,} \PYG{l+m+mf}{0.1427}\PYG{p}{),} \PYG{p}{(}\PYG{l+m+mi}{2038}\PYG{p}{,} \PYG{l+m+mf}{0.1475}\PYG{p}{),} \PYG{p}{(}\PYG{l+m+mi}{2039}\PYG{p}{,} \PYG{l+m+mf}{0.1525}\PYG{p}{),}
+    \PYG{p}{(}\PYG{l+m+mi}{2040}\PYG{p}{,} \PYG{l+m+mf}{0.1577}\PYG{p}{),} \PYG{p}{(}\PYG{l+m+mi}{2041}\PYG{p}{,} \PYG{l+m+mf}{0.1631}\PYG{p}{),} \PYG{p}{(}\PYG{l+m+mi}{2042}\PYG{p}{,} \PYG{l+m+mf}{0.1686}\PYG{p}{),} \PYG{p}{(}\PYG{l+m+mi}{2043}\PYG{p}{,} \PYG{l+m+mf}{0.1744}\PYG{p}{),}
+    \PYG{p}{(}\PYG{l+m+mi}{2044}\PYG{p}{,} \PYG{l+m+mf}{0.1783}\PYG{p}{),} \PYG{p}{(}\PYG{l+m+mi}{2045}\PYG{p}{,} \PYG{l+m+mf}{0.1824}\PYG{p}{)}
+\PYG{p}{]}
+
+\PYG{c+c1}{\PYGZsh{} 2. 转换为 DataFrame}
+\PYG{n}{df} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{DataFrame}\PYG{p}{(}\PYG{n}{data}\PYG{p}{,} \PYG{n}{columns}\PYG{o}{=}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}年份\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}指标值\PYGZdq{}}\PYG{p}{])}
+
+\PYG{c+c1}{\PYGZsh{} 3. 归一化计算}
+\PYG{n}{min\PYGZus{}val} \PYG{o}{=} \PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}指标值\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{min}\PYG{p}{()}
+\PYG{n}{max\PYGZus{}val} \PYG{o}{=} \PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}指标值\PYGZdq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{max}\PYG{p}{()}
+\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}标准化值\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{p}{(}\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}指标值\PYGZdq{}}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{min\PYGZus{}val}\PYG{p}{)} \PYG{o}{/} \PYG{p}{(}\PYG{n}{max\PYGZus{}val} \PYG{o}{\PYGZhy{}} \PYG{n}{min\PYGZus{}val}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 4. 写入 Excel}
+\PYG{n}{output\PYGZus{}path} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}教育指标标准化结果.xlsx\PYGZdq{}}
+\PYG{n}{df}\PYG{o}{.}\PYG{n}{to\PYGZus{}excel}\PYG{p}{(}\PYG{n}{output\PYGZus{}path}\PYG{p}{,} \PYG{n}{index}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{,} \PYG{n}{sheet\PYGZus{}name}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}标准化数据\PYGZdq{}}\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}已保存到: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{output\PYGZus{}path}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}最小值:\PYGZdq{}}\PYG{p}{,} \PYG{n}{min\PYGZus{}val}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}最大值:\PYGZdq{}}\PYG{p}{,} \PYG{n}{max\PYGZus{}val}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}标准化结果示例：\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{df}\PYG{o}{.}\PYG{n}{head}\PYG{p}{())}  \PYG{c+c1}{\PYGZsh{} 打印前 5 行验证}
+
+\PYGZbs{}\PYG{n}{begin}\PYG{p}{\PYGZob{}}\PYG{n}{minted}\PYG{p}{\PYGZcb{}\PYGZob{}}\PYG{n}{python}\PYG{p}{\PYGZcb{}}
+\PYG{k+kn}{import} \PYG{n+nn}{pandas} \PYG{k}{as} \PYG{n+nn}{pd}
+\PYG{n}{impandas} \PYG{k}{as} \PYG{n}{pd}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
+\PYG{k+kn}{from} \PYG{n+nn}{statsmodels.tsa.arima.model} \PYG{k+kn}{import} \PYG{n}{ARIMA}
+\end{Verbatim}

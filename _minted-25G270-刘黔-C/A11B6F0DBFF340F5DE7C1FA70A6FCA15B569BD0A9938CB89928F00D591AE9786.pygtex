@@ -1,0 +1,57 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import} \PYG{n+nn}{pandas} \PYG{k}{as} \PYG{n+nn}{pd}
+\PYG{k+kn}{import} \PYG{n+nn}{matplotlib.pyplot} \PYG{k}{as} \PYG{n+nn}{plt}
+\PYG{k+kn}{from} \PYG{n+nn}{scipy.interpolate} \PYG{k+kn}{import} \PYG{n}{interp1d}
+\PYG{k+kn}{from} \PYG{n+nn}{matplotlib.font\PYGZus{}manager} \PYG{k+kn}{import} \PYG{n}{FontProperties}
+\PYG{k+kn}{import} \PYG{n+nn}{numpy} \PYG{k}{as} \PYG{n+nn}{np}
+\PYG{n}{font} \PYG{o}{=} \PYG{n}{FontProperties}\PYG{p}{(}\PYG{n}{fname}\PYG{o}{=}\PYG{l+s+sa}{r}\PYG{l+s+s2}{\PYGZdq{}C:\PYGZbs{}Windows\PYGZbs{}Fonts\PYGZbs{}simsun.ttc\PYGZdq{}}\PYG{p}{,} \PYG{n}{size}\PYG{o}{=}\PYG{l+m+mi}{12}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{rcParams}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}font.family\PYGZsq{}}\PYG{p}{]} \PYG{o}{=} \PYG{n}{font}\PYG{o}{.}\PYG{n}{get\PYGZus{}name}\PYG{p}{()}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{rcParams}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}axes.unicode\PYGZus{}minus\PYGZsq{}}\PYG{p}{]} \PYG{o}{=} \PYG{k+kc}{False}
+\PYG{c+c1}{\PYGZsh{} 读取文件}
+\PYG{n}{excel\PYGZus{}file} \PYG{o}{=} \PYG{n}{pd}\PYG{o}{.}\PYG{n}{ExcelFile}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}第三问整合1.xlsx\PYGZsq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 获取指定工作表中的数据}
+\PYG{n}{df} \PYG{o}{=} \PYG{n}{excel\PYGZus{}file}\PYG{o}{.}\PYG{n}{parse}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Sheet1\PYGZsq{}}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} 筛选 2010 \PYGZhy{} 2023 年的数据}
+\PYG{n}{selected\PYGZus{}df} \PYG{o}{=} \PYG{n}{df}\PYG{p}{[(}\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}年份\PYGZsq{}}\PYG{p}{]} \PYG{o}{\PYGZgt{}=} \PYG{l+m+mi}{1992}\PYG{p}{)} \PYG{o}{\PYGZam{}} \PYG{p}{(}\PYG{n}{df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}年份\PYGZsq{}}\PYG{p}{]} \PYG{o}{\PYGZlt{}=} \PYG{l+m+mi}{2023}\PYG{p}{)]}
+
+
+
+\PYG{n}{x\PYGZus{}new} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{linspace}\PYG{p}{(}\PYG{n}{selected\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}年份\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{min}\PYG{p}{(),} \PYG{n}{selected\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}年份\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{max}\PYG{p}{(),} \PYG{l+m+mi}{500}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 对标准化1进行插值}
+\PYG{n}{f1} \PYG{o}{=} \PYG{n}{interp1d}\PYG{p}{(}\PYG{n}{selected\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}年份\PYGZsq{}}\PYG{p}{],} \PYG{n}{selected\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}标准化1\PYGZsq{}}\PYG{p}{],} \PYG{n}{kind}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}cubic\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{y1\PYGZus{}smooth} \PYG{o}{=} \PYG{n}{f1}\PYG{p}{(}\PYG{n}{x\PYGZus{}new}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 对标准化2进行插值}
+\PYG{n}{f2} \PYG{o}{=} \PYG{n}{interp1d}\PYG{p}{(}\PYG{n}{selected\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}年份\PYGZsq{}}\PYG{p}{],} \PYG{n}{selected\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}标准化5\PYGZsq{}}\PYG{p}{],} \PYG{n}{kind}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}cubic\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{y2\PYGZus{}smooth} \PYG{o}{=} \PYG{n}{f2}\PYG{p}{(}\PYG{n}{x\PYGZus{}new}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 对标准化3进行插值，处理可能存在的缺失值}
+\PYG{n}{f3} \PYG{o}{=} \PYG{n}{interp1d}\PYG{p}{(}\PYG{n}{selected\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}年份\PYGZsq{}}\PYG{p}{],} \PYG{n}{selected\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}标准化3\PYGZsq{}}\PYG{p}{],} \PYG{n}{kind}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}cubic\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{y3\PYGZus{}smooth} \PYG{o}{=} \PYG{n}{f3}\PYG{p}{(}\PYG{n}{x\PYGZus{}new}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 绘制平滑折线图}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{figure}\PYG{p}{(}\PYG{n}{figsize}\PYG{o}{=}\PYG{p}{(}\PYG{l+m+mi}{10}\PYG{p}{,} \PYG{l+m+mi}{6}\PYG{p}{))}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{x\PYGZus{}new}\PYG{p}{,} \PYG{n}{y1\PYGZus{}smooth}\PYG{p}{,} \PYG{n}{label}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}第三产业占GDP比重（D）\PYGZsq{}}\PYG{p}{,}\PYG{n}{color}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}\PYGZsh{}edfc78\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{x\PYGZus{}new}\PYG{p}{,} \PYG{n}{y3\PYGZus{}smooth}\PYG{p}{,} \PYG{n}{label}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}Y1（本科以上毕业生平均工资 / 社会平均工资）\PYGZsq{}}\PYG{p}{,}\PYG{n}{color}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}\PYGZsh{}90b6a5\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{x\PYGZus{}new}\PYG{p}{,} \PYG{n}{y2\PYGZus{}smooth}\PYG{p}{,} \PYG{n}{label}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}本科毕业生人数（S）\PYGZsq{}}\PYG{p}{,}\PYG{n}{color}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}\PYGZsh{}bea887\PYGZsq{}}\PYG{p}{)}
+
+
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{scatter}\PYG{p}{(}\PYG{n}{selected\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}年份\PYGZsq{}}\PYG{p}{],} \PYG{n}{selected\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}标准化1\PYGZsq{}}\PYG{p}{],} \PYG{n}{marker}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}o\PYGZsq{}}\PYG{p}{,} \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}\PYGZsh{}edfc78\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{scatter}\PYG{p}{(}\PYG{n}{selected\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}年份\PYGZsq{}}\PYG{p}{],} \PYG{n}{selected\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}标准化5\PYGZsq{}}\PYG{p}{],} \PYG{n}{marker}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}s\PYGZsq{}}\PYG{p}{,} \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}\PYGZsh{}bea887\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{scatter}\PYG{p}{(}\PYG{n}{selected\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}年份\PYGZsq{}}\PYG{p}{],} \PYG{n}{selected\PYGZus{}df}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}标准化3\PYGZsq{}}\PYG{p}{],} \PYG{n}{marker}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}\PYGZca{}\PYGZsq{}}\PYG{p}{,} \PYG{n}{color}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}\PYGZsh{}90b6a5\PYGZsq{}}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} 添加标题和标签}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{title}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}1992 \PYGZhy{} 2023 年 3 个标准化值折线图\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{xlabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}年份\PYGZsq{}}\PYG{p}{,}\PYG{n}{fontsize}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}12\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{ylabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}标准化值\PYGZsq{}}\PYG{p}{,}\PYG{n}{fontsize}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}12\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{xticks}\PYG{p}{(}\PYG{n}{fontsize}\PYG{o}{=}\PYG{l+m+mi}{13}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{yticks}\PYG{p}{(}\PYG{n}{fontsize}\PYG{o}{=}\PYG{l+m+mi}{13}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} 添加图例}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{legend}\PYG{p}{()}
+\PYG{c+c1}{\PYGZsh{} 显示网格}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{grid}\PYG{p}{(}\PYG{n}{axis}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}y\PYGZsq{}}\PYG{p}{,}\PYG{n}{linestyle}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}\PYGZhy{}\PYGZhy{}\PYGZsq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} 显示图形}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{show}\PYG{p}{()}
+\end{Verbatim}
